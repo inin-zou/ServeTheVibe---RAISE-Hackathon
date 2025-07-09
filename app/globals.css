@@ -152,3 +152,16 @@
     pointer-events: none;
   }
 }
+
+@layer utilities {
+  .resize-handle-container {
+    @apply flex-shrink-0 bg-transparent;
+  }
+  .resize-handle {
+    @apply w-2 h-full bg-transparent rounded-full transition-colors duration-200;
+  }
+  .resize-handle[data-state="hover"],
+  .resize-handle[data-state="drag"] {
+    @apply bg-immersive-purple/30;
+  }
+}

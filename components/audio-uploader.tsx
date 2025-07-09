@@ -25,11 +25,12 @@ export function AudioUploader({ onUpload }: AudioUploaderProps) {
   }
 
   return (
-    <div>
+    <div className="flex-1">
       <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileChange} className="hidden" />
-      <Button onClick={handleClick} className="w-full btn-immersive text-white font-semibold h-12 rounded-xl">
+      <Button onClick={handleClick} className="w-full btn-immersive text-white font-semibold h-12 rounded-xl text-base">
         <Upload className="w-5 h-5 mr-2" />
-        Upload Audio File
+        <span className="hidden sm:inline">Upload Audio File</span>
+        <span className="sm:hidden">Upload</span>
       </Button>
     </div>
   )

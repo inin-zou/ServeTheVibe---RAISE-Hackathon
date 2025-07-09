@@ -106,7 +106,7 @@ export function MicrophoneRecorder({ onRecordingComplete }: MicrophoneRecorderPr
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex-1">
       {recordingState !== "reviewing" && (
         <div className="flex items-center gap-3">
           <Button
@@ -115,24 +115,26 @@ export function MicrophoneRecorder({ onRecordingComplete }: MicrophoneRecorderPr
               recordingState === "recording"
                 ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 animate-pulse"
                 : "btn-immersive"
-            } text-white font-semibold h-12 px-6 rounded-xl w-full`}
+            } text-white font-semibold h-12 px-4 rounded-xl w-full text-base`}
           >
             {recordingState === "recording" ? (
               <>
                 <Square className="w-5 h-5 mr-2" />
-                Stop Recording
+                <span className="hidden sm:inline">Stop Recording</span>
+                <span className="sm:hidden">Stop</span>
               </>
             ) : (
               <>
                 <Mic className="w-5 h-5 mr-2" />
-                Start Recording
+                <span className="hidden sm:inline">Start Recording</span>
+                <span className="sm:hidden">Record</span>
               </>
             )}
           </Button>
 
           {recordingState === "recording" && (
             <span className="text-sm text-immersive-pink font-semibold whitespace-nowrap">
-              Recording: {formatTime(recordingTime)}
+              {formatTime(recordingTime)}
             </span>
           )}
         </div>
@@ -140,7 +142,7 @@ export function MicrophoneRecorder({ onRecordingComplete }: MicrophoneRecorderPr
 
       {recordingState === "reviewing" && recordedAudioUrl && (
         <div className="glass-panel-teal rounded-xl p-4 space-y-4">
-          <h3 className="text-sm font-semibold text-immersive-teal">Review Your Recording</h3>
+          <h3 className="text-base font-semibold text-immersive-teal">Review Your Recording</h3>
           <div className="flex items-center gap-3">
             <Button
               onClick={togglePlayback}
@@ -149,9 +151,9 @@ export function MicrophoneRecorder({ onRecordingComplete }: MicrophoneRecorderPr
             >
               {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
             </Button>
-            <div className="w-full bg-immersive-surface/50 h-1 rounded-full">
+            <div className="w-full bg-immersive-surface/50 h-2 rounded-full">
               <div
-                className="bg-immersive-teal h-1 rounded-full"
+                className="bg-immersive-teal h-2 rounded-full transition-all duration-200"
                 style={{
                   width: audioRef.current
                     ? `${(audioRef.current.currentTime / audioRef.current.duration) * 100}%`
@@ -166,22 +168,23 @@ export function MicrophoneRecorder({ onRecordingComplete }: MicrophoneRecorderPr
             onEnded={() => setIsPlaying(false)}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
-            onTimeUpdate={() => audioRef.current && setRecordingTime(audioRef.current.currentTime)} // just to force re-render for progress bar
+            onTimeUpdate={() => audioRef.current && setRecordingTime(audioRef.current.currentTime)}
           />
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button
               onClick={handleRetake}
-              className="w-full bg-immersive-surface hover:bg-immersive-panel border border-immersive-gray text-immersive-light font-semibold h-12 rounded-xl"
+              className="w-full bg-immersive-surface hover:bg-immersive-panel border border-immersive-gray text-immersive-light font-semibold h-12 rounded-xl text-base"
             >
               <RotateCcw className="w-5 h-5 mr-2" />
               Retake
             </Button>
             <Button
               onClick={handleConfirm}
-              className="w-full bg-gradient-to-r from-immersive-teal to-immersive-cyan hover:from-immersive-cyan hover:to-immersive-teal text-immersive-bg font-semibold h-12 rounded-xl"
+              className="w-full bg-gradient-to-r from-immersive-teal to-immersive-cyan hover:from-immersive-cyan hover:to-immersive-teal text-immersive-bg font-semibold h-12 rounded-xl text-base"
             >
               <Check className="w-5 h-5 mr-2" />
-              Use This Recording
+              <span className="hidden sm:inline">Use This Recording</span>
+              <span className="sm:hidden">Use</span>
             </Button>
           </div>
         </div>

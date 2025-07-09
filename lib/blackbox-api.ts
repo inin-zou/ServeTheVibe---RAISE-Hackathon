@@ -12,11 +12,13 @@ interface BlackboxResponse {
   }>
 }
 
-export async function generateAIResponse(userMessage: string, context?: string): Promise<string> {
-  const API_URL = "https://api.blackbox.ai/chat/completions"
-  const API_KEY = "sk-jiRlzjnwD8-xyslAX0dvXA"
+interface ConversationHistory {
+  messages: BlackboxMessage[]
+  lastUpdated: number
+}
 
-  const systemPrompt = `You are a music AI assistant specialized in Strudel live coding and music generation. 
+// System prompt for consistent AI behavior
+const SYSTEM_PROMPT = `You are a music AI assistant specialized in Strudel live coding and music generation. 
 
 Your role:
 - Help users create music with Strudel Mini notation
@@ -24,6 +26,8 @@ Your role:
 - Explain music theory concepts simply
 - Generate Strudel code examples
 - Be encouraging and creative with music suggestions
+- Remember previous conversations and build upon them
+- Provide context-aware responses based on conversation history
 
 Strudel Mini examples you can suggest:
 - Drums: "bd sd bd sd" (kick, snare pattern)
@@ -32,13 +36,22 @@ Strudel Mini examples you can suggest:
 - Complex: "stack(bd sd bd sd, c3 e3 g3 c4)" (layered patterns)
 
 Always respond in a helpful, musical, and encouraging tone. Include relevant Strudel code when appropriate.
-${context ? `\n\nContext: ${context}` : ""}`
+Remember the conversation context and refer to previous exchanges when relevant.`
 
+export async function generateAIResponse(
+  userMessage: string,
+  conversationHistory: BlackboxMessage[] = [],
+): Promise<{ response: string; updatedHistory: BlackboxMessage[] }> {
+  const API_URL = "https://api.blackbox.ai/chat/completions"
+  const API_KEY = "sk-jiRlzjnwD8-xyslAX0dvXA"
+
+  // Build complete conversation context
   const messages: BlackboxMessage[] = [
     {
       role: "system",
-      content: systemPrompt,
+      content: SYSTEM_PROMPT,
     },
+    ...conversationHistory,
     {
       role: "user",
       content: userMessage,
@@ -46,6 +59,12 @@ ${context ? `\n\nContext: ${context}` : ""}`
   ]
 
   try {
+    console.log("Sending conversation to Blackbox AI:", {
+      messageCount: messages.length,
+      lastUserMessage: userMessage,
+      historyLength: conversationHistory.length,
+    })
+
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
@@ -55,7 +74,7 @@ ${context ? `\n\nContext: ${context}` : ""}`
       body: JSON.stringify({
         model: "blackboxai/openai/gpt-4",
         messages: messages,
-        max_tokens: 500,
+        max_tokens: 800,
         temperature: 0.7,
       }),
     })
@@ -67,13 +86,55 @@ ${context ? `\n\nContext: ${context}` : ""}`
     const data: BlackboxResponse = await response.json()
 
     if (data.choices && data.choices.length > 0) {
-      return data.choices[0].message.content
+      const aiResponse = data.choices[0].message.content
+
+      // Update conversation history with both user message and AI response
+      const updatedHistory: BlackboxMessage[] = [
+        ...conversationHistory,
+        {
+          role: "user",
+          content: userMessage,
+        },
+        {
+          role: "assistant",
+          content: aiResponse,
+        },
+      ]
+
+      console.log("Blackbox AI response received:", {
+        responseLength: aiResponse.length,
+        updatedHistoryLength: updatedHistory.length,
+      })
+
+      return {
+        response: aiResponse,
+        updatedHistory: updatedHistory,
+      }
     } else {
       throw new Error("No response from AI")
     }
   } catch (error) {
     console.error("Blackbox AI API error:", error)
-    return "Sorry, I can't respond right now. Please try again later, or try some Strudel code directly in the editor!"
+
+    // Still update history with user message and error response
+    const errorResponse =
+      "Sorry, I can't respond right now. Please try again later, or try some Strudel code directly in the editor!"
+    const updatedHistory: BlackboxMessage[] = [
+      ...conversationHistory,
+      {
+        role: "user",
+        content: userMessage,
+      },
+      {
+        role: "assistant",
+        content: errorResponse,
+      },
+    ]
+
+    return {
+      response: errorResponse,
+      updatedHistory: updatedHistory,
+    }
   }
 }
 
@@ -109,10 +170,28 @@ export function extractStrudelCode(aiResponse: string): string | null {
   return null
 }
 
-// Generate context for AI based on recent messages
-export function generateContextFromMessages(messages: any[]): string {
-  const recentMessages = messages.slice(-3) // Last 3 messages
-  const context = recentMessages.map((msg) => `${msg.type}: ${msg.content}`).join("\n")
+// Helper function to get conversation summary for debugging
+export function getConversationSummary(history: BlackboxMessage[]): string {
+  const userMessages = history.filter((msg) => msg.role === "user").length
+  const assistantMessages = history.filter((msg) => msg.role === "assistant").length
+  const totalMessages = history.length
 
-  return context
+  return `Conversation: ${userMessages} user messages, ${assistantMessages} AI responses (${totalMessages} total)`
+}
+
+// Helper function to trim conversation history if it gets too long
+export function trimConversationHistory(history: BlackboxMessage[], maxMessages = 20): BlackboxMessage[] {
+  if (history.length <= maxMessages) {
+    return history
+  }
+
+  // Keep the most recent messages, but ensure we maintain user-assistant pairs
+  const trimmed = history.slice(-maxMessages)
+
+  // If we start with an assistant message, remove it to maintain proper flow
+  if (trimmed.length > 0 && trimmed[0].role === "assistant") {
+    return trimmed.slice(1)
+  }
+
+  return trimmed
 }

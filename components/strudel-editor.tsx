@@ -228,19 +228,22 @@ export function StrudelEditor({ code, onCodeChange, isPlaying, onPlayToggle }: S
   }
 
   return (
-    <div className="h-full flex flex-col glass-panel-teal rounded-2xl shadow-2xl relative overflow-hidden">
+    <div className="h-full flex flex-col glass-panel-teal rounded-xl md:rounded-2xl shadow-2xl relative overflow-hidden">
       {/* Header */}
-      <div className="relative p-6 border-b border-immersive-teal/20">
+      <div className="relative p-4 md:p-6 border-b border-immersive-teal/20 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold flex items-center gap-3 text-glow-teal">
-            <Code2 className="w-6 h-6 text-immersive-teal" />
-            Strudel Live Coding
-            {isInitializing && <span className="text-sm text-immersive-pink">Booting...</span>}
-            {!strudelLoaded && !isInitializing && <span className="text-sm text-immersive-gray">Loading...</span>}
-            {strudelLoaded && <span className="text-sm text-immersive-teal">Online</span>}
+          <h2 className="text-lg md:text-xl font-bold flex items-center gap-2 md:gap-3 text-glow-teal">
+            <Code2 className="w-5 h-5 md:w-6 md:h-6 text-immersive-teal" />
+            <span className="hidden sm:inline">Strudel Live Coding</span>
+            <span className="sm:hidden">Strudel</span>
+            {isInitializing && <span className="text-xs md:text-sm text-immersive-pink">Booting...</span>}
+            {!strudelLoaded && !isInitializing && (
+              <span className="text-xs md:text-sm text-immersive-gray">Loading...</span>
+            )}
+            {strudelLoaded && <span className="text-xs md:text-sm text-immersive-teal">Online</span>}
           </h2>
 
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <Button
               onClick={handlePlay}
               disabled={!strudelLoaded || isInitializing}
@@ -248,10 +251,11 @@ export function StrudelEditor({ code, onCodeChange, isPlaying, onPlayToggle }: S
                 isPlaying
                   ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
                   : "btn-immersive"
-              } text-white font-semibold px-6 h-12 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300`}
+              } text-white font-semibold px-4 md:px-6 h-12 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-base`}
             >
               {isPlaying ? <Square className="w-5 h-5 mr-2" /> : <Play className="w-5 h-5 mr-2" />}
-              {isPlaying ? "Stop" : "Play"}
+              <span className="hidden sm:inline">{isPlaying ? "Stop" : "Play"}</span>
+              <span className="sm:hidden">{isPlaying ? "Stop" : "Play"}</span>
             </Button>
 
             <Button
@@ -267,7 +271,7 @@ export function StrudelEditor({ code, onCodeChange, isPlaying, onPlayToggle }: S
 
       {/* Error Display */}
       {error && (
-        <div className="relative p-4 bg-red-900/20 border-b border-red-500/30">
+        <div className="relative p-3 md:p-4 bg-red-900/20 border-b border-red-500/30 flex-shrink-0">
           <p className="text-sm text-red-400">
             <span className="text-immersive-pink font-semibold">Error:</span> {error}
           </p>
@@ -276,7 +280,7 @@ export function StrudelEditor({ code, onCodeChange, isPlaying, onPlayToggle }: S
 
       {/* Loading Display */}
       {isInitializing && (
-        <div className="relative p-6 glass-panel-pink border-b border-immersive-pink/20">
+        <div className="relative p-4 md:p-6 glass-panel-pink border-b border-immersive-pink/20 flex-shrink-0">
           <div className="space-y-4">
             <p className="text-sm text-immersive-pink font-semibold">🎵 Initializing Strudel Engine...</p>
 
@@ -296,12 +300,12 @@ export function StrudelEditor({ code, onCodeChange, isPlaying, onPlayToggle }: S
       )}
 
       {/* Code Editor */}
-      <div className="flex-1 p-6 overflow-hidden relative">
+      <div className="flex-1 p-4 md:p-6 overflow-hidden relative">
         <div className="h-full code-editor rounded-xl relative overflow-hidden">
           <textarea
             value={code}
             onChange={(e) => handleCodeChange(e.target.value)}
-            className="w-full h-full p-6 bg-transparent text-immersive-teal font-mono text-sm resize-none outline-none scrollbar-immersive"
+            className="w-full h-full p-4 md:p-6 bg-transparent text-immersive-teal font-mono text-base resize-none outline-none scrollbar-immersive"
             spellCheck={false}
             placeholder={
               isInitializing
@@ -311,11 +315,14 @@ export function StrudelEditor({ code, onCodeChange, isPlaying, onPlayToggle }: S
                   : "// Loading Strudel REPL..."
             }
             disabled={!strudelLoaded || isInitializing}
+            style={{
+              lineHeight: 1.6,
+            }}
           />
 
           {/* Code highlighting overlay */}
-          <div className="absolute inset-0 p-6 pointer-events-none overflow-hidden">
-            <pre className="font-mono text-sm leading-relaxed">
+          <div className="absolute inset-0 p-4 md:p-6 pointer-events-none overflow-hidden">
+            <pre className="font-mono text-base" style={{ lineHeight: 1.6 }}>
               {code.split("\n").map((line, index) => (
                 <div
                   key={index}
@@ -332,18 +339,20 @@ export function StrudelEditor({ code, onCodeChange, isPlaying, onPlayToggle }: S
       </div>
 
       {/* Status Bar */}
-      <div className="relative p-4 border-t border-immersive-teal/20">
+      <div className="relative p-3 md:p-4 border-t border-immersive-teal/20 flex-shrink-0">
         <div className="flex items-center justify-between text-sm">
           <span className="text-immersive-light">
             {isInitializing ? (
               <span className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-immersive-pink rounded-full animate-pulse" />
-                Initializing Audio Engine...
+                <span className="hidden sm:inline">Initializing Audio Engine...</span>
+                <span className="sm:hidden">Initializing...</span>
               </span>
             ) : !strudelLoaded ? (
               <span className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
-                Loading Strudel...
+                <span className="hidden sm:inline">Loading Strudel...</span>
+                <span className="sm:hidden">Loading...</span>
               </span>
             ) : isPlaying ? (
               <span className="flex items-center gap-2">
@@ -357,26 +366,15 @@ export function StrudelEditor({ code, onCodeChange, isPlaying, onPlayToggle }: S
               </span>
             )}
           </span>
-          <span className="text-immersive-gray">
-            Lines: {code.split("\n").length} | Chars: {code.length}
+          <span className="text-immersive-gray text-xs">
+            <span className="hidden sm:inline">
+              Lines: {code.split("\n").length} | Chars: {code.length}
+            </span>
+            <span className="sm:hidden">
+              {code.split("\n").length}L | {code.length}C
+            </span>
           </span>
         </div>
-      </div>
-
-      {/* Instructions */}
-      <div className="relative p-4 glass-panel border-t border-immersive-teal/20">
-        <p className="text-xs text-immersive-light/80 leading-relaxed">
-          <span className="text-immersive-teal font-semibold">Strudel Mini Examples:</span>
-          <br />
-          <span className="text-immersive-purple">• Melody →</span>{" "}
-          <code className="text-immersive-teal font-mono">c3 e3 g3 c4</code>
-          <br />
-          <span className="text-immersive-purple">• Drums →</span>{" "}
-          <code className="text-immersive-teal font-mono">bd sd bd sd</code>
-          <br />
-          <span className="text-immersive-purple">• Bass →</span>{" "}
-          <code className="text-immersive-teal font-mono">c2 f2 g2 ~</code>
-        </p>
       </div>
     </div>
   )
